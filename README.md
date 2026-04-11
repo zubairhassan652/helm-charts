@@ -3,3 +3,6 @@
 
 # Minikube docker shell
 `minikube docker-env | Invoke-Expression`
+
+# Enable ingress addons
+`minikube addons enable ingress`
