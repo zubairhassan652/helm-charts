@@ -51,7 +51,7 @@ args:
 
 # Prometheus ServiceMonitor for automatic scraping
 serviceMonitor:
-  enabled: true
+  enabled: false  # Disabled since Prometheus Operator is not installed
   interval: 30s
   scrapeTimeout: 10s
   labels: {}
