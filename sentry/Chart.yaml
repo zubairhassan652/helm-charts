@@ -12,10 +12,10 @@ maintainers:
     email: charts@example.com
 dependencies:
   - name: postgresql
-    version: "12.x.x"
+    version: "latest"
     repository: "https://charts.bitnami.com/bitnami"
     condition: postgresql.enabled
   - name: redis
-    version: "17.x.x"
+    version: "latest"
     repository: "https://charts.bitnami.com/bitnami"
     condition: redis.enabled
