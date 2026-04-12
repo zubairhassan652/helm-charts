@@ -1,0 +1,86 @@
+replicaCount: 1
+
+image:
+  repository: registry.k8s.io/kube-state-metrics/kube-state-metrics
+  pullPolicy: IfNotPresent
+  tag: "v2.10.0"
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+  annotations: {}
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+rbac:
+  create: true
+
+# Prometheus ServiceMonitor for automatic scraping
+serviceMonitor:
+  enabled: false  # Disabled since Prometheus Operator is not installed
+  interval: 30s
+  scrapeTimeout: 30s
+  labels: {}
+  relabelings: []
+
+# Pod annotations for Prometheus scraping (if not using ServiceMonitor)
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/metrics"
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 150Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+# Collectors to enable
+collectors:
+  - certificatesigningrequests
+  - configmaps
+  - cronjobs
+  - daemonsets
+  - deployments
+  - endpoints
+  - horizontalpodautoscalers
+  - ingresses
+  - jobs
+  - leases
+  - limitranges
+  - mutatingwebhookconfigurations
+  - namespaces
+  - networkpolicies
+  - nodes
+  - persistentvolumeclaims
+  - persistentvolumes
+  - poddisruptionbudgets
+  - pods
+  - replicasets
+  - replicationcontrollers
+  - resourcequotas
+  - secrets
+  - services
+  - statefulsets
+  - storageclasses
+  - validatingwebhookconfigurations
+  - volumeattachments
+
+# Collectors to disable
+disabledCollectors: []
+
+# Additional arguments
+extraArgs: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

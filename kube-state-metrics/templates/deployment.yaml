@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "kube-state-metrics.fullname" . }}
+  labels:
+    {{- include "kube-state-metrics.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "kube-state-metrics.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+      labels:
+        {{- include "kube-state-metrics.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "kube-state-metrics.serviceAccountName" . }}
+      containers:
+      - name: kube-state-metrics
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: http-metrics
+          containerPort: 8080
+          protocol: TCP
+        args:
+          - --port=8080
+          - --telemetry-port=8081
+          {{- range .Values.collectors }}
+          - --resources={{ . }}
+          {{- end }}
+          {{- range .Values.disabledCollectors }}
+          - --disabled-resource={{ . }}
+          {{- end }}
+          {{- range .Values.extraArgs }}
+          - {{ . }}
+          {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
