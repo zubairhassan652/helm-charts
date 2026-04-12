@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: prom/prometheus
   pullPolicy: IfNotPresent
-  tag: "v15.0.0"
+  tag: "latest"
 
 nameOverride: ""
 fullnameOverride: ""
