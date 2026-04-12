@@ -1,0 +1,74 @@
+replicaCount: 1
+
+image:
+  repository: prom/node-exporter
+  pullPolicy: IfNotPresent
+  tag: "v1.7.0"
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 9100
+  targetPort: 9100
+  annotations: {}
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+rbac:
+  create: true
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 32Mi
+
+# Node selector to specify which nodes to deploy to
+# Example: disktype: ssd
+nodeSelector: {}
+
+tolerations:
+  - effect: NoSchedule
+    operator: Exists
+  - effect: NoExecute
+    operator: Exists
+
+affinity: {}
+
+# Node exporter arguments
+args:
+  - "--path.procfs=/host/proc"
+  - "--path.rootfs=/rootfs"
+  - "--path.sysfs=/host/sys"
+  - "--collector.netdev.device-exclude=^(veth.*)$"
+
+# Prometheus ServiceMonitor for automatic scraping
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}
+  relabelings: []
+
+# Pod annotations for Prometheus scraping (if not using ServiceMonitor)
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9100"
+  prometheus.io/path: "/metrics"
+
+# Host networking to access actual node metrics
+hostNetwork: true
+hostPID: true
+
+# Security context
+securityContext:
+  privileged: true
+  runAsNonRoot: false
+  runAsUser: 0
