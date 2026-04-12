@@ -1,0 +1,12 @@
+apiVersion: v2
+name: node-exporter
+description: Node Exporter for Prometheus - Hardware and OS metrics
+type: application
+version: 1.0.0
+appVersion: "1.7.0"
+home: https://github.com/prometheus/node_exporter
+sources:
+  - https://github.com/prometheus/node_exporter
+maintainers:
+  - name: Helm Charts
+    email: charts@example.com
