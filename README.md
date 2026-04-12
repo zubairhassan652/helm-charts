@@ -1,31 +1,45 @@
-# Kube-State-Metrics Helm Chart
+# Complete Kubernetes Monitoring Stack
 
-This repository contains a Helm chart for deploying **kube-state-metrics**, a service that generates metrics about the state of various Kubernetes objects.
+This repository contains Helm charts for a complete Kubernetes monitoring solution with **kube-state-metrics**, **Prometheus**, and **Grafana**.
 
 ## Overview
 
-Kube-state-metrics is a simple service that listens to the Kubernetes API server and generates metrics about the state of the objects. It exposes these metrics via an HTTP endpoint that can be scraped by Prometheus.
+This monitoring stack provides comprehensive observability for your Kubernetes cluster:
 
-## What is Kube-State-Metrics?
+- **kube-state-metrics**: Generates metrics about Kubernetes object states
+- **Prometheus**: Collects and stores metrics from various sources
+- **Grafana**: Visualizes metrics with dashboards and alerts
 
-Kube-state-metrics generates metrics about:
-- **Pods**: Status, restarts, resource usage
-- **Deployments**: Replicas, status, conditions
-- **Services**: Endpoints, types
-- **Nodes**: Conditions, capacity, allocatable
-- **Persistent Volumes**: Status, capacity, claims
-- **Jobs/CronJobs**: Status, completion time
-- **ConfigMaps/Secrets**: Count and metadata
-- **And many more Kubernetes objects**
+## Components
 
-## Installation
+### 1. Kube-State-Metrics
+Generates metrics about the state of various Kubernetes objects including:
+- Pods, Deployments, Services, Nodes
+- Persistent Volumes, ConfigMaps, Secrets
+- Jobs, CronJobs, DaemonSets, StatefulSets
+- Ingresses, NetworkPolicies, and more
+
+### 2. Prometheus
+Collects metrics from:
+- kube-state-metrics (Kubernetes object states)
+- Kubernetes API server
+- Kubernetes nodes and pods
+- Custom application metrics
+
+### 3. Grafana
+Provides visualization with:
+- Pre-configured dashboards for Kubernetes monitoring
+- Prometheus as default data source
+- Custom panels and alerts
+
+## Quick Start
 
 ### Prerequisites
-
 - Kubernetes cluster (1.16+)
 - Helm 3.0+
+- Minikube or any Kubernetes environment
 
-### Deploy Kube-State-Metrics
+### 1. Deploy Kube-State-Metrics
 
 ```bash
 helm install kube-state-metrics ./kube-state-metrics \
@@ -33,147 +47,220 @@ helm install kube-state-metrics ./kube-state-metrics \
   --create-namespace
 ```
 
-### Verify Installation
+### 2. Deploy Prometheus
 
 ```bash
-# Check deployment
-kubectl get deployment kube-state-metrics -n kube-system
-
-# Check service
-kubectl get service kube-state-metrics -n kube-system
-
-# Check pods
-kubectl get pods -l app.kubernetes.io/name=kube-state-metrics -n kube-system
+helm install prometheus ./prometheus \
+  --namespace monitoring \
+  --create-namespace
 ```
 
-## Accessing Metrics
-
-### Port Forward to Access Metrics
+### 3. Deploy Grafana
 
 ```bash
+helm install grafana ./grafana \
+  --namespace monitoring
+```
+
+### 4. Access the Services
+
+```bash
+# Port forward services
+kubectl port-forward svc/prometheus 9090:9090 -n monitoring
+kubectl port-forward svc/grafana 3000:80 -n monitoring
 kubectl port-forward svc/kube-state-metrics 8080:8080 -n kube-system
+
+# Access URLs:
+# Prometheus: http://localhost:9090
+# Grafana:    http://localhost:3000 (admin/admin123)
+# KSM Metrics: http://localhost:8080/metrics
 ```
 
-Then visit: **http://localhost:8080/metrics**
+## Detailed Installation
 
-### Sample Metrics
+### Kube-State-Metrics
 
+```bash
+helm install kube-state-metrics ./kube-state-metrics \
+  --namespace kube-system \
+  --set collectors[0]=pods \
+  --set collectors[1]=deployments \
+  --set collectors[2]=services
 ```
-# Pods
-kube_pod_info{namespace="default",pod="nginx-12345",node="minikube"}
-kube_pod_status_phase{namespace="default",phase="Running"} 1
 
-# Deployments
-kube_deployment_spec_replicas{namespace="default",deployment="nginx"} 3
-kube_deployment_status_replicas_available{namespace="default",deployment="nginx"} 3
+### Prometheus
 
-# Services
-kube_service_info{namespace="default",service="nginx-service",type="ClusterIP"}
-kube_service_spec_type{namespace="default",service="nginx-service",type="ClusterIP"} 1
+```bash
+helm install prometheus ./prometheus \
+  --namespace monitoring \
+  --set persistence.enabled=true \
+  --set persistence.size=20Gi
+```
 
-# Nodes
-kube_node_info{node="minikube",kernel_version="5.15.0",os_image="Ubuntu 20.04.5 LTS"}
-kube_node_status_capacity_cpu_cores 2
-kube_node_status_capacity_memory_bytes 8.3e+09
+### Grafana
+
+```bash
+helm install grafana ./grafana \
+  --namespace monitoring \
+  --set persistence.enabled=true \
+  --set grafana.admin.password="your-secure-password"
 ```
 
 ## Configuration
 
-### Enable/Disable Collectors
+### Custom Domains
 
-Edit `values.yaml` to customize which resource collectors to enable:
+Update `values.yaml` files to use your domains:
 
 ```yaml
-collectors:
-  - pods
-  - deployments
-  - services
-  - nodes
-  - persistentvolumes
-  # Add or remove collectors as needed
+# grafana/values.yaml
+ingress:
+  hosts:
+    - host: grafana.yourdomain.com
 
-disabledCollectors:
-  - secrets  # Disable if you don't want secret metrics
+# prometheus/values.yaml
+ingress:
+  hosts:
+    - host: prometheus.yourdomain.com
+```
+
+### Enable TLS
+
+```yaml
+ingress:
+  tls:
+    - secretName: grafana-tls
+      hosts:
+        - grafana.yourdomain.com
 ```
 
 ### Resource Limits
 
-Adjust resource requests and limits in `values.yaml`:
+Adjust resources based on your cluster size:
 
 ```yaml
 resources:
   limits:
-    cpu: 100m
-    memory: 150Mi
+    cpu: 500m
+    memory: 1Gi
   requests:
-    cpu: 10m
-    memory: 64Mi
+    cpu: 250m
+    memory: 512Mi
 ```
 
-## Integration with Prometheus
+## Accessing Services
 
-### Manual Scrape Configuration
+### Grafana
+- **URL**: http://localhost:3000 or your configured domain
+- **Username**: admin
+- **Password**: admin123 (change in production!)
+- **Pre-loaded Dashboards**:
+  - Kubernetes Cluster Monitoring (ID: 315)
+  - Kubernetes API Server (ID: 12006)
+  - Node Exporter (ID: 1860)
+  - Persistent Volumes (ID: 673)
 
-Add to your Prometheus configuration:
+### Prometheus
+- **URL**: http://localhost:9090 or your configured domain
+- **Targets**: Check `/targets` to see scraped endpoints
+- **Query**: Use PromQL to query metrics
 
-```yaml
-scrape_configs:
-  - job_name: 'kube-state-metrics'
-    static_configs:
-      - targets: ['kube-state-metrics.kube-system.svc.cluster.local:8080']
+### Kube-State-Metrics
+- **URL**: http://localhost:8080/metrics
+- **Raw Metrics**: Direct access to all generated metrics
+
+## Sample Queries
+
+### Prometheus Queries
+
+```
+# Pod status
+kube_pod_status_phase{namespace="default",phase="Running"}
+
+# Deployment replicas
+kube_deployment_spec_replicas{namespace="default"}
+kube_deployment_status_replicas_available{namespace="default"}
+
+# Node resources
+kube_node_status_capacity_cpu_cores
+kube_node_status_capacity_memory_bytes
+
+# Service endpoints
+kube_service_spec_type
 ```
 
-### Using Service Discovery
+### Grafana Dashboards
 
-```yaml
-scrape_configs:
-  - job_name: 'kube-state-metrics'
-    kubernetes_sd_configs:
-      - role: endpoints
-    relabel_configs:
-      - source_labels: [__meta_kubernetes_endpoints_name]
-        regex: 'kube-state-metrics'
-        action: keep
-      - source_labels: [__meta_kubernetes_endpoint_port_name]
-        regex: 'http-metrics'
-        action: keep
-```
+1. **Cluster Overview**: CPU, memory, and network usage
+2. **Pods**: Status, restarts, resource usage
+3. **Nodes**: Capacity, allocatable resources
+4. **Persistent Volumes**: Usage and status
 
 ## Troubleshooting
 
-### Check Pod Logs
+### Check Pod Status
 
 ```bash
+kubectl get pods -n monitoring
+kubectl get pods -n kube-system | grep kube-state-metrics
+```
+
+### View Logs
+
+```bash
+kubectl logs -l app.kubernetes.io/name=prometheus -n monitoring
+kubectl logs -l app.kubernetes.io/name=grafana -n monitoring
 kubectl logs -l app.kubernetes.io/name=kube-state-metrics -n kube-system
 ```
 
-### Check Service Endpoints
+### Prometheus Targets
 
-```bash
-kubectl get endpoints kube-state-metrics -n kube-system
-```
+Visit `http://localhost:9090/targets` to check if all targets are healthy.
 
-### Common Issues
+### Grafana Data Sources
 
-1. **RBAC Permissions**: Ensure the service account has proper cluster permissions
-2. **Resource Limits**: Increase memory limits if metrics collection is slow
-3. **Network Policies**: Ensure kube-state-metrics can access the Kubernetes API
+In Grafana, go to **Configuration** → **Data Sources** to verify Prometheus connection.
+
+## Production Considerations
+
+### Security
+- Change default Grafana password
+- Enable TLS/HTTPS
+- Use RBAC for access control
+- Secure Prometheus endpoints
+
+### Persistence
+- Enable persistence for Prometheus and Grafana
+- Configure appropriate storage classes
+- Set up backup strategies
+
+### Scaling
+- Adjust resource limits based on cluster size
+- Consider Prometheus federation for large clusters
+- Use Grafana high availability setup
+
+### Monitoring
+- Set up alerts in Grafana/Prometheus
+- Monitor the monitoring stack itself
+- Configure log aggregation
 
 ## Uninstallation
 
 ```bash
+helm uninstall grafana -n monitoring
+helm uninstall prometheus -n monitoring
 helm uninstall kube-state-metrics -n kube-system
 ```
 
+## Chart Versions
+
+- **kube-state-metrics**: 2.10.0
+- **Prometheus**: 2.45.0
+- **Grafana**: 10.2.0
+
 ## Resources
 
-- [Kube-State-Metrics GitHub](https://github.com/kubernetes/kube-state-metrics)
-- [Available Metrics Documentation](https://github.com/kubernetes/kube-state-metrics/blob/master/docs/metrics.md)
-- [Prometheus Integration](https://prometheus.io/docs/guides/kube-state-metrics/)
-
-## Chart Details
-
-- **Chart Version**: 1.0.0
-- **App Version**: 2.10.0
-- **Kubernetes**: >= 1.16.0
-- **Helm**: >= 3.0.0
+- [Kube-State-Metrics Documentation](https://github.com/kubernetes/kube-state-metrics)
+- [Prometheus Documentation](https://prometheus.io/docs/)
+- [Grafana Documentation](https://grafana.com/docs/)
+- [Kubernetes Monitoring Guide](https://kubernetes.io/docs/tasks/debug-application-cluster/resource-usage-monitoring/)
