@@ -11,3 +11,6 @@ data:
       evaluation_interval: {{ .Values.prometheus.global.evaluation_interval }}
     scrape_configs:
       {{- toYaml .Values.prometheus.scrape_configs | nindent 6 }}
+    {{- if .Values.extraScrapeConfigs }}
+    {{ .Values.extraScrapeConfigs | nindent 4 }}
+    {{- end }}
