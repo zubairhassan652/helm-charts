@@ -1,0 +1,55 @@
+replicaCount: 1
+
+image:
+  repository: prom/prometheus
+  pullPolicy: IfNotPresent
+  tag: "v15.0.0"
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 9090
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: prometheus.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: prometheus-tls
+      hosts:
+        - prometheus.example.com
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1024Mi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+prometheus:
+  global:
+    scrape_interval: 15s
+    evaluation_interval: 15s
+  scrape_configs:
+    - job_name: 'prometheus'
+      static_configs:
+        - targets: ['localhost:9090']
+
+persistence:
+  enabled: false
+  storageClassName: "standard"
+  size: 20Gi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

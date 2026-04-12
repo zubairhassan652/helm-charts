@@ -1,0 +1,21 @@
+apiVersion: v2
+name: sentry
+description: Sentry error tracking and monitoring
+type: application
+version: 1.0.0
+appVersion: "23.12.0"
+home: https://sentry.io
+sources:
+  - https://github.com/getsentry/sentry
+maintainers:
+  - name: Helm Charts
+    email: charts@example.com
+dependencies:
+  - name: postgresql
+    version: "12.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+  - name: redis
+    version: "17.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled

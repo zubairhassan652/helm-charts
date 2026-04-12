@@ -1,0 +1,75 @@
+replicaCount: 1
+
+image:
+  repository: sentry
+  pullPolicy: IfNotPresent
+  tag: "23.12.0"
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 9000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: sentry.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: sentry-tls
+      hosts:
+        - sentry.example.com
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1024Mi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+sentry:
+  environment:
+    SENTRY_SECRET_KEY: "changeme-secret-key-must-be-set"
+    SENTRY_POSTGRES_HOST: "sentry-postgresql"
+    SENTRY_POSTGRES_PORT: "5432"
+    SENTRY_POSTGRES_USER: "sentry"
+    SENTRY_POSTGRES_PASSWORD: "sentry"
+    SENTRY_POSTGRES_DB: "sentry"
+    SENTRY_REDIS_HOST: "sentry-redis-master"
+    SENTRY_REDIS_PORT: "6379"
+    SENTRY_EMAIL_HOST: "smtp.example.com"
+    SENTRY_EMAIL_PORT: "587"
+    SENTRY_EMAIL_USER: "sentry@example.com"
+    SENTRY_EMAIL_PASSWORD: "change-me"
+    SENTRY_SERVER_EMAIL: "sentry@example.com"
+    SENTRY_SINGLE_ORGANIZATION: "true"
+
+postgresql:
+  enabled: true
+  auth:
+    username: sentry
+    password: sentry
+    database: sentry
+
+redis:
+  enabled: true
+  auth:
+    enabled: false
+
+persistence:
+  enabled: false
+  storageClassName: "standard"
+  size: 10Gi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

@@ -1,0 +1,12 @@
+apiVersion: v2
+name: grafana
+description: Grafana for monitoring and visualization
+type: application
+version: 1.0.0
+appVersion: "9.5.0"
+home: https://grafana.com
+sources:
+  - https://github.com/grafana/grafana
+maintainers:
+  - name: Helm Charts
+    email: charts@example.com
