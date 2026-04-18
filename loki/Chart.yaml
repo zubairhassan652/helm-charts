@@ -1,9 +1,9 @@
 apiVersion: v2
-name: loki
-description: Loki logging stack for Django app log collection
+name: loki-stack
+description: Loki logging stack wrapper for Django app log collection
 type: application
 version: 0.1.0
-appVersion: "2.10.0"
+appVersion: "3.6.7"
 dependencies:
   - name: loki
     version: "6.55.0"
