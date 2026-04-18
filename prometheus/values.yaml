@@ -106,7 +106,10 @@ prometheus:
           action: replace
           target_label: kubernetes_pod_name
 
-extraScrapeConfigs: ""
+  extraScrapeConfigs: |
+    - job_name: 'django-app'
+      static_configs:
+        - targets: ['django-service.argocd.svc.cluster.local:8000']
 
 serviceAccount:
   create: true

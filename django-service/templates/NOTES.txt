@@ -1,0 +1,8 @@
+1. Get the application URL:
+   https://{{ .Values.ingress.host }}
+
+2. If using `helm install`:
+   helm install {{ .Release.Name }} .
+
+3. If using `helm upgrade --install`:
+   helm upgrade --install {{ .Release.Name }} .
