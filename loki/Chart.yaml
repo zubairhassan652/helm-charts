@@ -1,0 +1,13 @@
+apiVersion: v2
+name: loki
+description: Loki logging stack for Django app log collection
+type: application
+version: 0.1.0
+appVersion: "2.10.0"
+dependencies:
+  - name: loki
+    version: "2.10.0"
+    repository: "https://grafana.github.io/helm-charts"
+  - name: promtail
+    version: "4.11.0"
+    repository: "https://grafana.github.io/helm-charts"

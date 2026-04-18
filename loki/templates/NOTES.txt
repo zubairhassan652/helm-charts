@@ -1,0 +1,12 @@
+1. Add the Grafana Helm repo if you have not already:
+   helm repo add grafana https://grafana.github.io/helm-charts
+   helm repo update
+
+2. Install or upgrade Loki and Promtail:
+   helm dependency update ./loki
+   helm upgrade --install loki ./loki --namespace logging --create-namespace
+
+3. Confirm that Loki and Promtail are running:
+   kubectl get pods -n logging
+
+4. Logs from the Django app should now be collected by Promtail and pushed into Loki.
