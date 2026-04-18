@@ -14,7 +14,10 @@ serviceAccount:
   annotations: {}
   name: ""
 
-podAnnotations: {}
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/path: "/metrics"
+  prometheus.io/port: "8000"
 podLabels: {}
 
 podSecurityContext: {}
@@ -23,10 +26,6 @@ securityContext: {}
 service:
   type: ClusterIP
   port: 8000
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/path: "/metrics"
-    prometheus.io/port: "8000"
 
 ingress:
   enabled: true
