@@ -26,4 +26,5 @@ COPY . /app
 EXPOSE 8000
 
 # Use Gunicorn to serve the Django app
-CMD ["gunicorn", "helm_charts.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "helm_charts.wsgi:application", "--bind", "0.0.0.0:8000", "--capture-output", "--enable-stdio-inheritance"]
+
