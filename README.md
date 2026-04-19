@@ -7,6 +7,9 @@
 # Enable ingress addons
 `minikube addons enable ingress`
 
+# Buid the image djagno app
+` docker build -t django-app:latest .`
+
 # Add and update the repo
 helm repo add argo https://argoproj.github.io/argo-helm
 helm repo update
@@ -18,7 +21,7 @@ helm install argocd argo/argo-cd `
   --set notifications.enabled=true `
   --set crds.install=true `
   --set server.extraArgs={--insecure}
-  
+
 
 # Add the Grafana repo
 helm repo add grafana https://grafana.github.io/helm-charts
@@ -32,3 +35,6 @@ helm upgrade --install loki grafana/loki-stack `
   --set loki.persistence.size=5Gi `
   --set promtail.config.lokiAddress="http://loki:3100/loki/api/v1/push"
 
+# Apply ohter charts using ArgoCD 
+Apply all the charts in current repo in `argocd` namespace using
+argocd dashboard
